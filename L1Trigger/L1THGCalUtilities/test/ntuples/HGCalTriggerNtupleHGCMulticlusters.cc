@@ -72,6 +72,8 @@ private:
   std::vector<int> cl3d_hbm_;
   std::vector<float> cl3d_ntc67_;
   std::vector<float> cl3d_ntc90_;
+  std::vector<float> cl3d_rhoroverzvsz_;
+  std::vector<float> cl3d_rhophivsz_;
   std::vector<float> cl3d_bdteg_;
   std::vector<int> cl3d_quality_;
   std::vector<std::vector<float>> cl3d_ipt_;
@@ -181,6 +183,8 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
   tree.Branch(withPrefix("hbm"), &cl3d_hbm_);
   tree.Branch(withPrefix("ntc67"), &cl3d_ntc67_);
   tree.Branch(withPrefix("ntc90"), &cl3d_ntc90_);
+  tree.Branch(withPrefix("rhoROverZvsZ"), &cl3d_rhoroverzvsz_);
+  tree.Branch(withPrefix("rhoPhivsZ"), &cl3d_rhophivsz_);
   tree.Branch(withPrefix("bdteg"), &cl3d_bdteg_);
   tree.Branch(withPrefix("quality"), &cl3d_quality_);
   if (fill_interpretation_info_) {
@@ -271,6 +275,8 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
     cl3d_hbm_.emplace_back(cl3d_itr->hbm());
     cl3d_ntc67_.emplace_back(cl3d_itr->triggerCells67percent());
     cl3d_ntc90_.emplace_back(cl3d_itr->triggerCells90percent());
+    cl3d_rhoroverzvsz_.emplace_back(cl3d_itr->rhoROverZvsZ());
+    cl3d_rhophivsz_.emplace_back(cl3d_itr->rhoPhivsZ());
     cl3d_bdteg_.emplace_back(id_->value(*cl3d_itr));
     cl3d_quality_.emplace_back(cl3d_itr->hwQual());
     if (fill_interpretation_info_) {
@@ -381,6 +387,8 @@ void HGCalTriggerNtupleHGCMulticlusters::clear() {
   cl3d_hbm_.clear();
   cl3d_ntc67_.clear();
   cl3d_ntc90_.clear();
+  cl3d_rhoroverzvsz_.clear();
+  cl3d_rhophivsz_.clear();
   cl3d_bdteg_.clear();
   cl3d_quality_.clear();
   cl3d_ipt_.clear();

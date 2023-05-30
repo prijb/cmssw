@@ -661,10 +661,8 @@ int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int e
   return bitmap;
 }
 
-=======
 
 
->>>>>>> 1670d29d361 (Adding rho variable to simulation)
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
   unsigned hcal_offset = triggerTools_.layers(ForwardSubdetector::HGCEE) / 2;
   unsigned lastlayer = triggerGeometry.lastTriggerLayer();

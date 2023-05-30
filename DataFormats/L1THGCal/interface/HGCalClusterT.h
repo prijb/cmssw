@@ -162,7 +162,7 @@ namespace l1t {
     float layer90percent() const { return layer90percent_; }
     float triggerCells67percent() const { return triggerCells67percent_; }
     float triggerCells90percent() const { return triggerCells90percent_; }
-<<<<<<< HEAD
+
     float first1layers() const { return first1layers_; }
     float first3layers() const { return first3layers_; }
     float first5layers() const { return first5layers_; }
@@ -179,10 +179,10 @@ namespace l1t {
     int ebm0() const { return ebm0_; }
     int ebm1() const { return ebm1_; }
     int hbm() const { return hbm_; }
-=======
+
     float rhoROverZvsZ() const { return rhoROverZvsZ_; }
     float rhoPhivsZ() const { return rhoPhivsZ_; }
->>>>>>> 1670d29d361 (Adding rho variable to simulation)
+
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
@@ -207,7 +207,7 @@ namespace l1t {
     void layer90percent(float layer90percent) { layer90percent_ = layer90percent; }
     void triggerCells67percent(float triggerCells67percent) { triggerCells67percent_ = triggerCells67percent; }
     void triggerCells90percent(float triggerCells90percent) { triggerCells90percent_ = triggerCells90percent; }
-<<<<<<< HEAD
+
     void first1layers(float first1layers) { first1layers_ = first1layers; }
     void first3layers(float first3layers) { first3layers_ = first3layers; }
     void first5layers(float first5layers) { first5layers_ = first5layers; }
@@ -224,10 +224,10 @@ namespace l1t {
     void ebm0(int ebm0) { ebm0_ = ebm0; }
     void ebm1(int ebm1) { ebm1_ = ebm1; }
     void hbm(int hbm) { hbm_ = hbm; }
-=======
+
     void rhoROverZvsZ(float rhoROverZvsZ) { rhoROverZvsZ_ = rhoROverZvsZ; }
     void rhoPhivsZ(float rhoPhivsZ) { rhoPhivsZ_ = rhoPhivsZ; }
->>>>>>> 1670d29d361 (Adding rho variable to simulation)
+
 
     // Firmware-specific cluster properties
     unsigned long int hw_sigma_e_quotient() const { return hw_sigma_e_quotient_; }
