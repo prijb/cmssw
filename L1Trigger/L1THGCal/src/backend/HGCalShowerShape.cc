@@ -27,6 +27,35 @@ float HGCalShowerShape::meanX(const std::vector<pair<float, float>>& energy_X_tc
   return X_mean;
 }
 
+// Compute correlations between any pair of variables
+float HGCalShowerShape::rhoXY(const std::vector<pair<float, float>>& tc_X_Y) const {
+  float X_sum = 0;
+  float Y_sum = 0;
+  float X2_sum = 0;
+  float Y2_sum = 0;
+  float XY_sum = 0;
+
+  float n = tc_X_Y.size();
+
+  for (const auto& tc : tc_X_Y) {
+    X_sum += tc.first;
+    Y_sum += tc.second;
+    X2_sum += tc.first*tc.first;
+    Y2_sum += tc.second*tc.second;
+    XY_sum += tc.first*tc.second;
+  }
+
+  float N = n*XY_sum-X_sum*Y_sum;
+  if( ( (n*X2_sum-X_sum*X_sum)<0 )||( (n*Y2_sum-Y_sum*Y_sum)<0 ) ) return -999;
+  float D = std::sqrt(n*X2_sum-X_sum*X_sum)*std::sqrt(n*Y2_sum-Y_sum*Y_sum);
+
+  float rho = -999;
+  if (D > 0)
+    rho = N / D;
+  return rho;
+}
+
+
 int HGCalShowerShape::firstLayer(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
@@ -179,7 +208,9 @@ float HGCalShowerShape::percentileTriggerCells(const l1t::HGCalMulticluster& c3d
                                               : 0.);
 }
 
-float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const {
+float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varEtaEta(c3d)); }
+
+float HGCalShowerShape::varEtaEta(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
   std::vector<std::pair<float, float>> tc_energy_eta;
@@ -194,12 +225,14 @@ float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const 
     }
   }
 
-  float SeeTot = sigmaXX(tc_energy_eta, c3d.eta());
+  float varee = varXX(tc_energy_eta, c3d.eta());
 
-  return SeeTot;
+  return varee;
 }
 
-float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const {
+float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varPhiPhi(c3d)); }
+
+float HGCalShowerShape::varPhiPhi(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
   std::vector<std::pair<float, float>> tc_energy_phi;
@@ -214,12 +247,14 @@ float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const 
     }
   }
 
-  float SppTot = sigmaPhiPhi(tc_energy_phi, c3d.phi());
+  float varphiphi = varPhiPhi(tc_energy_phi, c3d.phi());
 
-  return SppTot;
+  return varphiphi;
 }
 
-float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const {
+float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varRR(c3d)); }
+
+float HGCalShowerShape::varRR(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
   std::vector<std::pair<float, float>> tc_energy_r;
@@ -239,9 +274,9 @@ float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const {
   }
 
   float r_mean = meanX(tc_energy_r);
-  float Szz = sigmaXX(tc_energy_r, r_mean);
+  float vrr = varXX(tc_energy_r, r_mean);
 
-  return Szz;
+  return vrr;
 }
 
 float HGCalShowerShape::sigmaEtaEtaMax(const l1t::HGCalMulticluster& c3d) const {
@@ -438,7 +473,8 @@ float HGCalShowerShape::meanZ(const l1t::HGCalMulticluster& c3d) const {
   return meanX(tc_energy_z);
 }
 
-float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const {
+float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const { return sqrt(varZZ(c3d)); }
+float HGCalShowerShape::varZZ(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
   std::vector<std::pair<float, float>> tc_energy_z;
@@ -454,11 +490,10 @@ float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const {
   }
 
   float z_mean = meanX(tc_energy_z);
-  float Szz = sigmaXX(tc_energy_z, z_mean);
+  float varzz = varXX(tc_energy_z, z_mean);
 
-  return Szz;
+  return varzz;
 }
-
 float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalCluster& c2d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& cellsPtrs = c2d.constituents();
 
@@ -512,17 +547,140 @@ float HGCalShowerShape::sigmaRRTot(const l1t::HGCalCluster& c2d) const {
   return Srr;
 }
 
+float HGCalShowerShape::sumLayers(const l1t::HGCalMulticluster& c3d, int start, int end) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+  unsigned nlayers = triggerTools_.getTriggerGeometry()->lastTriggerLayer();
+  std::vector<double> layers(nlayers, 0);
+  
+for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      unsigned layer = triggerTools_.triggerLayer(id_tc.second->detId());
+      if (layer == 0 || layer > nlayers)
+        continue;
+      layers[layer - 1] += id_tc.second->pt();  //shift by -1 because layer 0 doesn't exist
+    }
+  }
+  double sum_pt = 0;
+  for (int i = start - 1; i <= end - 1; i++) {  //shift by -1 because layer 1 is layers[0]
+    sum_pt += layers[i];
+  }
+  double tot = 0;
+  for (unsigned i = 0; i < layers.size(); ++i) {
+    tot += layers[i];
+  }
+  float frac = 0;
+  if (tot > 0) {
+    frac = sum_pt / tot;
+  }
+  return frac;
+}
+
+float HGCalShowerShape::rhoROverZvsZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_roverz_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      tc_roverz_z.emplace_back(std::make_pair(roverz, std::abs(id_tc.second->position().z())));
+    }
+  }
+
+  float rho = rhoXY(tc_roverz_z);
+
+  return rho;
+}
+
+
+float HGCalShowerShape::rhoPhivsZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_phi_z.emplace_back(std::make_pair(id_tc.second->phi(), std::abs(id_tc.second->position().z())));
+    }
+  }
+
+  float rho = rhoXY(tc_phi_z);
+
+  return rho;
+}
+
+int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int end, float threshold) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+  unsigned nlayers = triggerTools_.getTriggerGeometry()->lastTriggerLayer();
+  std::vector<double> layers(nlayers, 0);
+  
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      unsigned layer = triggerTools_.triggerLayer(id_tc.second->detId());
+      if (layer == 0 || layer > nlayers)
+        continue;
+      layers[layer - 1] += id_tc.second->pt();  //shift by -1 because layer 0 doesn't exist
+    }
+  }
+  double tot = 0;
+  for (unsigned i = 0; i < layers.size(); ++i)
+    tot += layers[i];
+  uint32_t bitmap = 0;
+  const int bitmap_size = 32;
+  if (start == 0) {
+    edm::LogWarning("DataNotFound") << "Trying to read layer 0 that doesn't exist, defaulted start to layer 1";
+    start = 1;
+  }
+  if ((end - start) + 1 > bitmap_size) {
+    edm::LogWarning("TooMuchData") << " Specified bounds cannot fit into bitmap size, defaulting to 0.";
+  } else {
+    for (int i = start; i <= end; i++) {
+      bitmap += (layers[i - 1] > threshold) << (end - (i));
+    }
+  }
+  return bitmap;
+}
+
+
+
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
+  unsigned hcal_offset = triggerTools_.layers(ForwardSubdetector::HGCEE) / 2;
+  unsigned lastlayer = triggerGeometry.lastTriggerLayer();
+  const unsigned showermaxlayer = 7;
   c3d.showerLength(showerLength(c3d));
   c3d.coreShowerLength(coreShowerLength(c3d, triggerGeometry));
   c3d.firstLayer(firstLayer(c3d));
   c3d.maxLayer(maxLayer(c3d));
   c3d.sigmaEtaEtaTot(sigmaEtaEtaTot(c3d));
   c3d.sigmaEtaEtaMax(sigmaEtaEtaMax(c3d));
+  c3d.varEtaEta(varEtaEta(c3d));
   c3d.sigmaPhiPhiTot(sigmaPhiPhiTot(c3d));
   c3d.sigmaPhiPhiMax(sigmaPhiPhiMax(c3d));
+  c3d.varPhiPhi(varPhiPhi(c3d));
   c3d.sigmaZZ(sigmaZZ(c3d));
+  c3d.varZZ(varZZ(c3d));
   c3d.sigmaRRTot(sigmaRRTot(c3d));
+  c3d.varRR(varRR(c3d));
   c3d.sigmaRRMax(sigmaRRMax(c3d));
   c3d.sigmaRRMean(sigmaRRMean(c3d));
   c3d.eMax(eMax(c3d));
@@ -532,4 +690,25 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.layer90percent(percentileLayer(c3d, triggerGeometry, 0.90));
   c3d.triggerCells67percent(percentileTriggerCells(c3d, 0.67));
   c3d.triggerCells90percent(percentileTriggerCells(c3d, 0.90));
+
+  c3d.first1layers(sumLayers(c3d, 1, 1));
+  c3d.first3layers(sumLayers(c3d, 1, 3));
+  c3d.first5layers(sumLayers(c3d, 1, 5));
+  c3d.firstHcal1layers(sumLayers(c3d, hcal_offset, hcal_offset));
+  c3d.firstHcal3layers(sumLayers(c3d, hcal_offset, hcal_offset + 2));
+  c3d.firstHcal5layers(sumLayers(c3d, hcal_offset, hcal_offset + 4));
+  c3d.last1layers(sumLayers(c3d, lastlayer, lastlayer));
+  c3d.last3layers(sumLayers(c3d, lastlayer - 2, lastlayer));
+  c3d.last5layers(sumLayers(c3d, lastlayer - 4, lastlayer));
+  c3d.emax1layers(sumLayers(c3d, showermaxlayer, showermaxlayer));
+  c3d.emax3layers(sumLayers(c3d, showermaxlayer - 1, showermaxlayer + 1));
+  c3d.emax5layers(sumLayers(c3d, showermaxlayer - 2, showermaxlayer + 2));
+  c3d.eot(sumLayers(c3d, 1, hcal_offset));
+  c3d.ebm0(bitmap(c3d, 1, hcal_offset, 0));
+  c3d.ebm1(bitmap(c3d, 1, hcal_offset, 1));
+  c3d.hbm(bitmap(c3d, hcal_offset, lastlayer, 0));
+
+  c3d.rhoROverZvsZ(rhoROverZvsZ(c3d));
+  c3d.rhoPhivsZ(rhoPhivsZ(c3d));
+
 }

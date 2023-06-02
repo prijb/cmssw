@@ -93,7 +93,8 @@ ntuple_multiclusters = cms.PSet(
     Multiclusters = cms.InputTag('l1tHGCalBackEndLayer2Producer:HGCalBackendLayer2Processor3DClustering'),
     EGIdentification = egamma_identification_histomax.clone(),
     FillLayerInfo = cms.bool(False),
-    FillInterpretationInfo = cms.bool(True)
+    FillInterpretationInfo = cms.bool(True),
+    FillHWClusterProperties = cms.bool(False)
 )
 
 ntuple_towers = cms.PSet(
@@ -106,12 +107,12 @@ l1tHGCalTriggerNtuplizer = cms.EDAnalyzer(
     Ntuples = cms.VPSet(
         ntuple_event,
         ntuple_gen,
-        ntuple_genjet,
-        ntuple_gentau,
-        ntuple_digis,
-        ntuple_triggercells,
-        ntuple_triggersums,
-        ntuple_multiclusters,
-        ntuple_towers
+        #ntuple_genjet,
+        #ntuple_gentau,
+        #ntuple_digis,
+        #ntuple_triggercells,
+        #ntuple_triggersums,
+        ntuple_multiclusters
+        #ntuple_towers
     )
 )

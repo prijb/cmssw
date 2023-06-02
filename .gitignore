@@ -13,3 +13,36 @@ __init__.py
 # ignore files under the top level $CMSSW_BASE/src directory, but not its subdirectories
 /*
 !/*/
+
+# ROOT files
+# Editors temp files
+*.swp
+*~
+
+# SCRAM business
+__init__.py
+*.pyc
+
+# CRAB3 stuff
+crab_*
+crabConfig_*
+
+#config files
+*.dat
+
+# ROOT-related files
+*.root
+
+
+# Other temp files
+*.txt
+*.pkl
+*.log
+*.png
+*.pdf
+*.out
+*.tmp
+*.pcm
+*.o
+
+
