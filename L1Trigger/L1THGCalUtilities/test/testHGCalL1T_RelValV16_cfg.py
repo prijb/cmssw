@@ -24,19 +24,31 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
+#process.source = cms.Source("PoolSource",
+#       fileNames = cms.untracked.vstring('/store/relval/CMSSW_12_5_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_125X_mcRun4_realistic_v2_2026D88PU200-v1/2580000/4e50b5fd-494b-4e43-acf3-35b6c302763a.root'),
+#       inputCommands=cms.untracked.vstring(
+#           'keep *',
+#           )
+#        )
+#process.options = cms.untracked.PSet(
+#
+#)
+
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('/store/relval/CMSSW_12_5_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_125X_mcRun4_realistic_v2_2026D88PU200-v1/2580000/4e50b5fd-494b-4e43-acf3-35b6c302763a.root'),
+       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DoublePhoton_FlatPt-1To100/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext1-v2/1210000/F2E5E947-0CB4-D245-A943-17F2F05709D3.root'),
        inputCommands=cms.untracked.vstring(
            'keep *',
+           'drop l1tTkPrimaryVertexs_L1TkPrimaryVertex__RECO',
            )
         )
 process.options = cms.untracked.PSet(
 
 )
+
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -48,7 +60,7 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("ntuple.root")
+    fileName = cms.string("ntuple_test.root")
     )
 
 # Other statements

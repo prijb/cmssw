@@ -182,7 +182,8 @@ namespace l1t {
 
     float rhoROverZvsZ() const { return rhoROverZvsZ_; }
     float rhoPhivsZ() const { return rhoPhivsZ_; }
-
+    float rhoROverZvsZWeight() const {return rhoROverZvsZWeight_; }
+    float rhoPhivsZWeight() const {return rhoPhivsZWeight_; }
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
@@ -227,7 +228,8 @@ namespace l1t {
 
     void rhoROverZvsZ(float rhoROverZvsZ) { rhoROverZvsZ_ = rhoROverZvsZ; }
     void rhoPhivsZ(float rhoPhivsZ) { rhoPhivsZ_ = rhoPhivsZ; }
-
+    void rhoROverZvsZWeight(float rhoROverZvsZWeight) {rhoROverZvsZWeight_ = rhoROverZvsZWeight;}
+    void rhoPhivsZWeight(float rhoPhivsZWeight) {rhoPhivsZWeight_ = rhoPhivsZWeight;}
 
     // Firmware-specific cluster properties
     unsigned long int hw_sigma_e_quotient() const { return hw_sigma_e_quotient_; }
@@ -355,6 +357,8 @@ namespace l1t {
     int hbm_ = 0;
     float rhoROverZvsZ_ = 0.;
     float rhoPhivsZ_ = 0.;
+    float rhoROverZvsZWeight_ = 0;
+    float rhoPhivsZWeight_ = 0;
 
     // firmware-specific cluster properties
     unsigned long int hw_sigma_e_quotient_ = 0;

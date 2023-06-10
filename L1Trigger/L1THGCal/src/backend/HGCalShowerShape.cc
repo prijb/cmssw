@@ -55,6 +55,46 @@ float HGCalShowerShape::rhoXY(const std::vector<pair<float, float>>& tc_X_Y) con
   return rho;
 }
 
+// Compute correlations between any pair of variables (Y weighted)
+float HGCalShowerShape::rhoXYWeight(const std::vector<pair<float, float>>& tc_X_Y) const {
+  float X_sum = 0;
+  float Y_sum = 0;
+  float X_mean = 0;
+  float Y_mean = 0;
+  float X_var = 0;
+  float Y_var = 0;
+  float N = 0;
+  float D_w = 0;
+
+  float n = tc_X_Y.size();
+
+  // Calculate mean X and Y first to set weights
+  for (const auto& tc: tc_X_Y) {
+    X_sum += tc.first;
+    Y_sum += tc.second;
+  }
+
+  X_mean = X_sum/n;
+  Y_mean = Y_sum/n;
+
+  // Calculate the modified correlation coefficient
+  for (const auto& tc : tc_X_Y) {
+    X_var += (tc.first - X_mean)*(tc.first - X_mean);
+    Y_var += (tc.second - X_mean)*(tc.second - Y_mean);
+    N += (tc.first - X_mean)*(tc.second - Y_mean)*pow((tc.second - 337.0),2);
+    D_w += (tc.second - 337.0)*(tc.second - 337.0);
+  }
+
+
+  if( ( (X_var)<0 )||( (Y_var)<0 ) ) return -999;
+  float D = std::sqrt(X_var)*std::sqrt(Y_var)*D_w;
+
+  float rho = -999;
+  if (D > 0)
+    rho = N / D;
+  return rho;
+}
+
 
 int HGCalShowerShape::firstLayer(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
@@ -625,6 +665,52 @@ float HGCalShowerShape::rhoPhivsZ(const l1t::HGCalMulticluster& c3d) const {
   return rho;
 }
 
+
+float HGCalShowerShape::rhoROverZvsZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_roverz_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      tc_roverz_z.emplace_back(std::make_pair(roverz, std::abs(id_tc.second->position().z())));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_roverz_z);
+
+  return rho;
+}
+
+float HGCalShowerShape::rhoPhivsZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_phi_z.emplace_back(std::make_pair(id_tc.second->phi(), std::abs(id_tc.second->position().z())));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_phi_z);
+
+  return rho;
+}
+
 int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int end, float threshold) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
   unsigned nlayers = triggerTools_.getTriggerGeometry()->lastTriggerLayer();
@@ -710,5 +796,7 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
 
   c3d.rhoROverZvsZ(rhoROverZvsZ(c3d));
   c3d.rhoPhivsZ(rhoPhivsZ(c3d));
+  c3d.rhoROverZvsZWeight(rhoROverZvsZWeight(c3d));
+  c3d.rhoPhivsZWeight(rhoPhivsZWeight(c3d));
 
 }
