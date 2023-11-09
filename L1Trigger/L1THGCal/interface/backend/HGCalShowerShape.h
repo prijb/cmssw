@@ -57,10 +57,32 @@ public:
   float varRR(const l1t::HGCalMulticluster& c3d) const;
   float sumLayers(const l1t::HGCalMulticluster& c3d, int start = 1, int end = 0) const;
   int bitmap(const l1t::HGCalMulticluster& c3d, int start = 1, int end = 14, float threshold = 0) const;
+  //Correlation variables
+  float rhoROverZvsZ(const l1t::HGCalMulticluster& c3d) const;
+  float rhoPhivsZ(const l1t::HGCalMulticluster& c3d) const;
+  float rhoPhivsROverZ(const l1t::HGCalMulticluster& c3d) const;
+  float rhoRvsZ(const l1t::HGCalMulticluster& c3d) const;
+  //Weighted correlation variables
+  float rhoROverZvsZWeight(const l1t::HGCalMulticluster& c3d) const;
+  float rhoPhivsZWeight(const l1t::HGCalMulticluster& c3d) const;
+  float rhoPhivsROverZWeight(const l1t::HGCalMulticluster& c3d) const;
+  float rhoRvsZWeight(const l1t::HGCalMulticluster& c3d) const;
+  //Non energy weighted quantities
+  float meanz_unweighted(const l1t::HGCalMulticluster& c3d) const;
+  float meanr_unweighted(const l1t::HGCalMulticluster& c3d) const;
+  float varRR_unweighted(const l1t::HGCalMulticluster& c3d) const;
+  float varZZ_unweighted(const l1t::HGCalMulticluster& c3d) const;
+
   void fillShapes(l1t::HGCalMulticluster&, const HGCalTriggerGeometryBase&) const;
 
 private:
+  //Template functions
   float meanX(const std::vector<pair<float, float>>& energy_X_tc) const;
+  //Correlation coefficient definition
+  float rhoXY(const std::vector<pair<float, float>>& tc_X_Y) const;
+  float rhoXYWeight(const std::vector<pair<float, float>>& tc_X_Y, const std::vector<float> Z_weight) const;
+  float meanXflat(const std::vector<float> X_vector) const;
+  float varXXflat(const std::vector<float> X_vector) const;
   // Compute energy-weighted RMS of any variable X in the cluster
   // Delta(a,b) functor as template argument. Default is (a-b)
   template <typename Delta = std::minus<float>>

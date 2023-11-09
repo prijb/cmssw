@@ -179,6 +179,22 @@ namespace l1t {
     int ebm1() const { return ebm1_; }
     int hbm() const { return hbm_; }
 
+    //Correlation coefficients
+    float rhoROverZvsZ() const { return rhoROverZvsZ_; }
+    float rhoPhivsZ() const { return rhoPhivsZ_; }
+    float rhoPhivsROverZ() const {return rhoPhivsROverZ_; } 
+    float rhoRvsZ() const {return rhoRvsZ_; }
+    //Weighted correlation coefficients 
+    float rhoROverZvsZWeight() const {return rhoROverZvsZWeight_; }
+    float rhoPhivsZWeight() const {return rhoPhivsZWeight_; }
+    float rhoPhivsROverZWeight() const {return rhoPhivsROverZWeight_; }
+    float rhoRvsZWeight() const {return rhoRvsZWeight_; }
+    //Non energy weighted quantities
+    float meanz_unweighted() const {return meanz_unweighted_; }
+    float meanr_unweighted() const {return meanr_unweighted_; }
+    float varRR_unweighted() const { return varRR_unweighted_; }
+    float varZZ_unweighted() const { return varZZ_unweighted_; }
+
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
     void firstLayer(int firstLayer) { firstLayer_ = firstLayer; }
@@ -218,6 +234,23 @@ namespace l1t {
     void ebm0(int ebm0) { ebm0_ = ebm0; }
     void ebm1(int ebm1) { ebm1_ = ebm1; }
     void hbm(int hbm) { hbm_ = hbm; }
+
+    //Setters for new quantities
+    //Correlation coefficients
+    void rhoROverZvsZ(float rhoROverZvsZ) { rhoROverZvsZ_ = rhoROverZvsZ; }
+    void rhoPhivsZ(float rhoPhivsZ) { rhoPhivsZ_ = rhoPhivsZ; }
+    void rhoPhivsROverZ(float rhoPhivsROverZ) {rhoPhivsROverZ_ = rhoPhivsROverZ; } 
+    void rhoRvsZ(float rhoRvsZ) {rhoRvsZ_ = rhoRvsZ; }
+    //Weighted correlation coefficients 
+    void rhoROverZvsZWeight(float rhoROverZvsZWeight) {rhoROverZvsZWeight_ = rhoROverZvsZWeight; }
+    void rhoPhivsZWeight(float rhoPhivsZWeight) { rhoPhivsZWeight_ = rhoPhivsZWeight; }
+    void rhoPhivsROverZWeight(float rhoPhivsROverZWeight) {rhoPhivsROverZWeight_ = rhoPhivsROverZWeight; }
+    void rhoRvsZWeight(float rhoRvsZWeight) {rhoRvsZWeight_ = rhoRvsZWeight; }
+    //Non energy weighted quantities
+    void meanz_unweighted(float meanz_unweighted) {meanz_unweighted_ = meanz_unweighted; }
+    void meanr_unweighted(float meanr_unweighted) {meanr_unweighted_ = meanr_unweighted; }
+    void varRR_unweighted(float varRR_unweighted) {varRR_unweighted_ = varRR_unweighted; }
+    void varZZ_unweighted(float varZZ_unweighted) {varZZ_unweighted_ = varZZ_unweighted; }
 
     // Firmware-specific cluster properties
     unsigned long int hw_sigma_e_quotient() const { return hw_sigma_e_quotient_; }
@@ -343,6 +376,20 @@ namespace l1t {
     int ebm0_ = 0;
     int ebm1_ = 0;
     int hbm_ = 0;
+
+    // Declare new variables
+    float rhoROverZvsZ_ = 0;
+    float rhoPhivsZ_ = 0;
+    float rhoPhivsROverZ_ = 0;
+    float rhoRvsZ_ = 0;
+    float rhoROverZvsZWeight_ = 0;
+    float rhoPhivsROverZWeight_ = 0;
+    float rhoPhivsZWeight_ = 0;
+    float rhoRvsZWeight_ = 0;
+    float meanz_unweighted_ = 0;
+    float meanr_unweighted_ = 0;
+    float varRR_unweighted_ = 0;
+    float varZZ_unweighted_ = 0;
 
     // firmware-specific cluster properties
     unsigned long int hw_sigma_e_quotient_ = 0;

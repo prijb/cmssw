@@ -27,6 +27,107 @@ float HGCalShowerShape::meanX(const std::vector<pair<float, float>>& energy_X_tc
   return X_mean;
 }
 
+// Compute correlations between any pair of variables
+float HGCalShowerShape::rhoXY(const std::vector<pair<float, float>>& tc_X_Y) const {
+  float X_sum = 0;
+  float Y_sum = 0;
+  float X2_sum = 0;
+  float Y2_sum = 0;
+  float XY_sum = 0;
+
+  float n = tc_X_Y.size();
+
+  for (const auto& tc : tc_X_Y) {
+    X_sum += tc.first;
+    Y_sum += tc.second;
+    X2_sum += tc.first*tc.first;
+    Y2_sum += tc.second*tc.second;
+    XY_sum += tc.first*tc.second;
+  }
+
+  float N = n*XY_sum-X_sum*Y_sum;
+  if( ( (n*X2_sum-X_sum*X_sum)<0 )||( (n*Y2_sum-Y_sum*Y_sum)<0 ) ) return -999;
+  float D = std::sqrt(n*X2_sum-X_sum*X_sum)*std::sqrt(n*Y2_sum-Y_sum*Y_sum);
+
+  float rho = -999;
+  if (D > 0)
+    rho = N / D;
+  return rho;
+}
+
+// Compute correlations between any pair of variables (Z weighted)
+float HGCalShowerShape::rhoXYWeight(const std::vector<pair<float, float>>& tc_X_Y, const std::vector<float> Z_weight) const {
+  float X_sum = 0;
+  float Y_sum = 0;
+  float X_mean = 0;
+  float Y_mean = 0;
+  float X_var = 0;
+  float Y_var = 0;
+  float N = 0;
+  //Sum of weights
+  float D_w = 0;
+  float weight;
+
+  unsigned n = tc_X_Y.size();
+  unsigned weight_iteration = 0;
+
+  // Calculate weighted means
+  for (unsigned i=0; i<tc_X_Y.size(); i++){
+    const auto& tc = tc_X_Y.at(i);
+    weight = pow((Z_weight.at(i) - 337.0),2);
+    X_sum += tc.first*weight;
+    Y_sum += tc.second*weight;
+    D_w += weight;
+  }
+  X_mean = X_sum/D_w;
+  Y_mean = Y_sum/D_w;
+
+  // Calculate the modified correlation coefficient
+  for (unsigned i=0; i<tc_X_Y.size(); i++){
+    const auto& tc = tc_X_Y.at(i);
+    weight = pow((Z_weight.at(i) - 337.0),2);
+    X_var += (tc.first - X_mean)*(tc.first - X_mean)*weight;
+    Y_var += (tc.second - Y_mean)*(tc.second - Y_mean)*weight;
+    N += (tc.first - X_mean)*(tc.second - Y_mean)*weight;
+  }
+
+  if( ( (X_var)<0 )||( (Y_var)<0 ) ) return -999;
+  float D = std::sqrt(X_var)*std::sqrt(Y_var);
+
+  float rho = -999;
+  if (D > 0)
+    rho = N / D;
+  return rho;
+}
+
+float HGCalShowerShape::meanXflat(const std::vector<float> X_vector) const {
+  float X_size = float(X_vector.size());
+  float X_sum = 0;
+
+  for (float X : X_vector) {
+    X_sum += X;
+  }
+
+  float X_mean = 0;
+  if (X_size > 0) X_mean = X_sum/X_size;
+
+  return X_mean;
+}
+
+float HGCalShowerShape::varXXflat(const std::vector<float> X_vector) const {
+  float X_size = float(X_vector.size());
+  float X_sum = 0;
+  float X2_sum = 0;
+
+  for (float X : X_vector) {
+    X_sum += X;
+    X2_sum += X*X;
+  }
+
+  if( ((X_size*X2_sum) - (X_sum*X_sum))<0 ) return -999;
+  return ((X2_sum/X_size) - ((X_sum*X_sum)/(X_size*X_size)));
+}
+
 int HGCalShowerShape::firstLayer(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
@@ -584,6 +685,320 @@ int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int e
   return bitmap;
 }
 
+//Define all the new variables
+float HGCalShowerShape::rhoROverZvsZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_roverz_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+
+      //Introduce sign dependence on y and z
+      if((id_tc.second->position().z()*id_tc.second->position().y())<0) roverz *= -1;
+
+      tc_roverz_z.emplace_back(std::make_pair(roverz, id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXY(tc_roverz_z);
+
+  return rho;
+}
+
+float HGCalShowerShape::rhoPhivsZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_phi_z.emplace_back(std::make_pair(id_tc.second->phi(), std::abs(id_tc.second->position().z())));
+    }
+  }
+
+  float rho = rhoXY(tc_phi_z);
+
+  return rho;
+}
+
+float HGCalShowerShape::rhoPhivsROverZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_roverz;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y and z
+      if((id_tc.second->position().z()*id_tc.second->position().y())<0) roverz *= -1;
+
+      tc_phi_roverz.emplace_back(std::make_pair(id_tc.second->phi(), roverz));
+    }
+  }
+
+  float rho = rhoXY(tc_phi_roverz);
+  return rho;
+}
+
+
+float HGCalShowerShape::rhoRvsZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_r_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) 
+                     : 0.);
+
+      //Introduce sign dependence on y
+      if((id_tc.second->position().y())<0) r *= -1;
+
+      tc_r_z.emplace_back(std::make_pair(r, id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXY(tc_r_z);
+  return rho;
+}
+
+//Now introduce weighted correlation
+float HGCalShowerShape::rhoROverZvsZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_roverz_z;
+  std::vector<float> z_weight;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y and z
+      if((id_tc.second->position().z()*id_tc.second->position().y())<0) roverz *= -1;
+
+      tc_roverz_z.emplace_back(std::make_pair(id_tc.second->position().z(), roverz));
+      z_weight.emplace_back(std::abs(id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_roverz_z, z_weight);
+
+  return rho;
+}
+
+float HGCalShowerShape::rhoPhivsZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_z;
+  std::vector<float> z_weight;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_phi_z.emplace_back(std::make_pair(id_tc.second->phi(), std::abs(id_tc.second->position().z())));
+      z_weight.emplace_back(std::abs(id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_phi_z, z_weight);
+  return rho;
+}
+
+float HGCalShowerShape::rhoPhivsROverZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_phi_roverz;
+  std::vector<float> z_weight;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y and z
+      if((id_tc.second->position().z()*id_tc.second->position().y())<0) roverz *= -1;
+
+      tc_phi_roverz.emplace_back(std::make_pair(id_tc.second->phi(), roverz));
+      z_weight.emplace_back(std::abs(id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_phi_roverz, z_weight);
+  return rho;
+}
+
+float HGCalShowerShape::rhoRvsZWeight(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_r_z;
+  std::vector<float> z_weight;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) 
+                     : 0.);
+
+      //Introduce sign dependence on y
+      if((id_tc.second->position().y())<0) r *= -1;
+      
+
+      tc_r_z.emplace_back(std::make_pair(r, id_tc.second->position().z()));
+      z_weight.emplace_back(std::abs(id_tc.second->position().z()));
+    }
+  }
+
+  float rho = rhoXYWeight(tc_r_z, z_weight);
+  return rho;
+}
+
+//Introduce the unweighted quantities
+float HGCalShowerShape::meanz_unweighted(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<float> tc_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      tc_z.emplace_back(id_tc.second->position().z());
+    }
+  }
+
+  float z_mean = meanXflat(tc_z);
+  return z_mean;
+}
+
+float HGCalShowerShape::meanr_unweighted(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<float> tc_r;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y
+      if((id_tc.second->position().y())<0) r *= -1;
+      tc_r.emplace_back(r);
+    }
+  }
+
+  float r_mean = meanXflat(tc_r);
+  return r_mean;
+}
+
+float HGCalShowerShape::varZZ_unweighted(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<float> tc_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      tc_z.emplace_back(id_tc.second->position().z());
+    }
+  }
+
+  float z_var = varXXflat(tc_z);
+  return z_var;
+}
+
+float HGCalShowerShape::varRR_unweighted(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<float> tc_r;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y
+      if((id_tc.second->position().y())<0) r *= -1;
+      tc_r.emplace_back(r);
+    }
+  }
+
+  float r_var = varXXflat(tc_r);
+  return r_var;
+}
+
+
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
   unsigned hcal_offset = triggerTools_.layers(ForwardSubdetector::HGCEE) / 2;
   unsigned lastlayer = triggerGeometry.lastTriggerLayer();
@@ -627,4 +1042,17 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.ebm0(bitmap(c3d, 1, hcal_offset, 0));
   c3d.ebm1(bitmap(c3d, 1, hcal_offset, 1));
   c3d.hbm(bitmap(c3d, hcal_offset, lastlayer, 0));
+  //Fill with new variables
+  c3d.rhoROverZvsZ(rhoROverZvsZ(c3d));
+  c3d.rhoPhivsZ(rhoPhivsZ(c3d));
+  c3d.rhoPhivsROverZ(rhoPhivsROverZ(c3d));
+  c3d.rhoRvsZ(rhoRvsZ(c3d));
+  c3d.rhoROverZvsZWeight(rhoROverZvsZWeight(c3d));
+  c3d.rhoPhivsZWeight(rhoPhivsZWeight(c3d));
+  c3d.rhoPhivsROverZWeight(rhoPhivsROverZWeight(c3d));
+  c3d.rhoRvsZWeight(rhoRvsZWeight(c3d));
+  c3d.meanz_unweighted(meanz_unweighted(c3d));
+  c3d.meanr_unweighted(meanr_unweighted(c3d));
+  c3d.varRR_unweighted(varRR_unweighted(c3d));
+  c3d.varZZ_unweighted(varZZ_unweighted(c3d));
 }

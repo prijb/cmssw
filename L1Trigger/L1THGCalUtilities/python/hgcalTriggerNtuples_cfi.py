@@ -107,12 +107,12 @@ l1tHGCalTriggerNtuplizer = cms.EDAnalyzer(
     Ntuples = cms.VPSet(
         ntuple_event,
         ntuple_gen,
-        ntuple_genjet,
-        ntuple_gentau,
-        ntuple_digis,
-        ntuple_triggercells,
-        ntuple_triggersums,
+        #ntuple_genjet,
+        #ntuple_gentau,
+        #ntuple_digis,
+        #ntuple_triggercells,
+        #ntuple_triggersums,
         ntuple_multiclusters,
-        ntuple_towers
+        #ntuple_towers
     )
 )
