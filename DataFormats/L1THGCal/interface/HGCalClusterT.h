@@ -193,6 +193,7 @@ namespace l1t {
     float meanz_unweighted() const {return meanz_unweighted_; }
     float meanr_unweighted() const {return meanr_unweighted_; }
     float varRR_unweighted() const { return varRR_unweighted_; }
+    float varROverZROverZ_unweighted() const { return varROverZROverZ_unweighted_; }
     float varZZ_unweighted() const { return varZZ_unweighted_; }
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
@@ -250,6 +251,7 @@ namespace l1t {
     void meanz_unweighted(float meanz_unweighted) {meanz_unweighted_ = meanz_unweighted; }
     void meanr_unweighted(float meanr_unweighted) {meanr_unweighted_ = meanr_unweighted; }
     void varRR_unweighted(float varRR_unweighted) {varRR_unweighted_ = varRR_unweighted; }
+    void varROverZROverZ_unweighted(float varROverZROverZ_unweighted) {varROverZROverZ_unweighted_ = varROverZROverZ_unweighted; }
     void varZZ_unweighted(float varZZ_unweighted) {varZZ_unweighted_ = varZZ_unweighted; }
 
     // Firmware-specific cluster properties
@@ -389,6 +391,7 @@ namespace l1t {
     float meanz_unweighted_ = 0;
     float meanr_unweighted_ = 0;
     float varRR_unweighted_ = 0;
+    float varROverZROverZ_unweighted_ = 0;
     float varZZ_unweighted_ = 0;
 
     // firmware-specific cluster properties

@@ -71,6 +71,7 @@ public:
   float meanz_unweighted(const l1t::HGCalMulticluster& c3d) const;
   float meanr_unweighted(const l1t::HGCalMulticluster& c3d) const;
   float varRR_unweighted(const l1t::HGCalMulticluster& c3d) const;
+  float varROverZROverZ_unweighted(const l1t::HGCalMulticluster& c3d) const;
   float varZZ_unweighted(const l1t::HGCalMulticluster& c3d) const;
 
   void fillShapes(l1t::HGCalMulticluster&, const HGCalTriggerGeometryBase&) const;

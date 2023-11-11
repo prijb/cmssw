@@ -998,6 +998,31 @@ float HGCalShowerShape::varRR_unweighted(const l1t::HGCalMulticluster& c3d) cons
   return r_var;
 }
 
+float HGCalShowerShape::varROverZROverZ_unweighted(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<float> tc_roverz;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float roverz = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      //Introduce sign dependence on y and z
+      if((id_tc.second->position().z()*id_tc.second->position().y())<0) roverz *= -1;
+      tc_roverz.emplace_back(roverz);
+    }
+  }
+
+  float roverz_var = varXXflat(tc_roverz);
+  return roverz_var;
+}
+
 
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
   unsigned hcal_offset = triggerTools_.layers(ForwardSubdetector::HGCEE) / 2;
@@ -1054,5 +1079,6 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.meanz_unweighted(meanz_unweighted(c3d));
   c3d.meanr_unweighted(meanr_unweighted(c3d));
   c3d.varRR_unweighted(varRR_unweighted(c3d));
+  c3d.varROverZROverZ_unweighted(varROverZROverZ_unweighted(c3d));
   c3d.varZZ_unweighted(varZZ_unweighted(c3d));
 }

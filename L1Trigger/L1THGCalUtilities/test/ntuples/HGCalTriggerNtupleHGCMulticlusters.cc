@@ -88,6 +88,7 @@ private:
   std::vector<float> cl3d_meanz_unweighted_;
   std::vector<float> cl3d_meanr_unweighted_;
   std::vector<float> cl3d_varRR_unweighted_;
+  std::vector<float> cl3d_varROverZROverZ_unweighted_;
   std::vector<float> cl3d_varZZ_unweighted_;
 
   // Hardware cluster properties
@@ -208,6 +209,7 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
   tree.Branch(withPrefix("meanz_unweighted"), &cl3d_meanz_unweighted_);
   tree.Branch(withPrefix("meanr_unweighted"), &cl3d_meanr_unweighted_);
   tree.Branch(withPrefix("varRR_unweighted"), &cl3d_varRR_unweighted_);
+  tree.Branch(withPrefix("varROverZROverZ_unweighted"), &cl3d_varROverZROverZ_unweighted_);
   tree.Branch(withPrefix("varZZ_unweighted"), &cl3d_varZZ_unweighted_);
   if (fill_interpretation_info_) {
     tree.Branch(withPrefix("ipt"), &cl3d_ipt_);
@@ -306,13 +308,12 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
     cl3d_rhorvsz_.emplace_back(cl3d_itr->rhoRvsZ());
     cl3d_rhoroverzvszweight_.emplace_back(cl3d_itr->rhoROverZvsZWeight());
     cl3d_rhophivszweight_.emplace_back(cl3d_itr->rhoPhivsZWeight());
-    cl3d_rhoroverzvszweight_.emplace_back(cl3d_itr->rhoROverZvsZWeight());
-    cl3d_rhophivszweight_.emplace_back(cl3d_itr->rhoPhivsZWeight());
     cl3d_rhophivsroverzweight_.emplace_back(cl3d_itr->rhoPhivsROverZWeight());
     cl3d_rhorvszweight_.emplace_back(cl3d_itr->rhoRvsZWeight());
     cl3d_meanz_unweighted_.emplace_back(cl3d_itr->meanz_unweighted());
     cl3d_meanr_unweighted_.emplace_back(cl3d_itr->meanr_unweighted());
     cl3d_varRR_unweighted_.emplace_back(cl3d_itr->varRR_unweighted());
+    cl3d_varROverZROverZ_unweighted_.emplace_back(cl3d_itr->varROverZROverZ_unweighted());
     cl3d_varZZ_unweighted_.emplace_back(cl3d_itr->varZZ_unweighted());
     if (fill_interpretation_info_) {
       std::vector<float> iPts(cl3d_itr->interpretations_size());
@@ -438,6 +439,7 @@ void HGCalTriggerNtupleHGCMulticlusters::clear() {
   cl3d_meanz_unweighted_.clear();
   cl3d_meanr_unweighted_.clear();
   cl3d_varRR_unweighted_.clear();
+  cl3d_varROverZROverZ_unweighted_.clear();
   cl3d_varZZ_unweighted_.clear();
   cl3d_ipt_.clear();
   cl3d_ienergy_.clear();
