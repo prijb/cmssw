@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from PhysicsTools.PatAlgos.tools.ConfigToolBase import *
 
 from CommonTools.PileupAlgos.Puppi_cff      import puppi
+from CommonTools.PileupAlgos.ABCNet_cff      import abc
 from CommonTools.PileupAlgos.softKiller_cfi import softKiller
 
 from RecoJets.JetProducers.PFJetParameters_cfi         import PFJetParameters
@@ -13,6 +14,8 @@ from RecoJets.JetProducers.AnomalousCellParameters_cfi import AnomalousCellParam
 from RecoJets.JetProducers.ak4GenJets_cfi  import ak4GenJets
 from RecoJets.JetProducers.ak4PFJets_cfi   import ak4PFJets, ak4PFJetsCHS, ak4PFJetsPuppi, ak4PFJetsSK, ak4PFJetsCS 
 from RecoJets.JetProducers.ak4CaloJets_cfi import ak4CaloJets 
+
+from RecoMET.METProducers.pfMet_cfi import pfMet
 
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cfi import updatedPatJets
 from PhysicsTools.PatAlgos.recoLayer0.jetCorrFactors_cfi  import patJetCorrFactors
@@ -277,7 +280,11 @@ class RecoJetAdder(object):
         # Skip if no PU Method or CS specified
         #
         if recoJetInfo.jetPUMethod in [ "", "cs" ]:
-          pass
+          #pass
+          if recoJetInfo.jetPUMethod in [ "", "cs" ]: #if no PU Method is chosen, add ABCNetProducer to process and task
+            self.addProcessAndTask(proc, "abc", abc.clone(
+            )
+          )
         #
         # CHS
         #
@@ -345,6 +352,69 @@ class RecoJetAdder(object):
             src = pfCand,
           )
         )
+        elif jet == "ak4pfabc": #add one elif to make sure to enter in a dedicated "ABC" clustering block, without spoiling the rest
+          self.addProcessAndTask(proc, jetCollection, ak4PFJets.clone(
+            src = pfCand, #pfCand for ak4pfabc is 'packedPFCandidates'
+            applyWeight = True,
+            srcWeights = cms.InputTag("abc") #this is a edm::ValueMap<float> (mapping each pf candidate to an ABCNet weight)
+          )
+        )
+          self.addProcessAndTask(proc, "pfMetABC", pfMet.clone(
+            src=pfCand,
+            applyWeight = True,
+            srcWeights = cms.InputTag("abc"),
+            alias = "ABCMET"
+          )
+        )
+          #manually add pfMetABC producer to the final MET sequence
+          s = getattr(proc, "fullPatMetSequence")
+          s += proc.pfMetABC #note: s = s + pfMetABC won't work
+          setattr(proc, "fullPatMetSequence", s)
+          proc.pfMetABCTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
+            doc = cms.string('PF MET computed with ABC PF candidates'),
+            extension = cms.bool(False),
+            name = cms.string('ABCMET'),
+            singleton = cms.bool(True),
+            src = cms.InputTag("pfMetABC"),
+            variables = cms.PSet(
+              phi = cms.PSet(
+                compression = cms.string('none'),
+                doc = cms.string('raw ABC PF MET phi'),
+                expr = cms.string("phi"),
+                mcOnly = cms.bool(False),
+                precision = cms.int32(10),
+                type = cms.string('float')
+              ),
+              pt = cms.PSet(
+                compression = cms.string('none'),
+                doc = cms.string('raw ABC PF MET pt'),
+                expr = cms.string("pt"),
+                mcOnly = cms.bool(False),
+                precision = cms.int32(10),
+                type = cms.string('float')
+              ),
+              sumEt = cms.PSet(
+                compression = cms.string('none'),
+                doc = cms.string('raw ABC PF scalar sum of Et'),
+                expr = cms.string("sumEt"),
+                mcOnly = cms.bool(False),
+                precision = cms.int32(10),
+                type = cms.string('float')
+              )
+            )
+          )
+          #manually add the pfMetABCTable to the metTables sequence
+          s = getattr(proc, "metTables")
+          s += proc.pfMetABCTable #note: s = s + pfMetABC won't work
+          setattr(proc, "metTables", s)
+        elif jet == "ak8pfabc": #add one elif to make sure to enter in a dedicated "ABC" clustering block, without spoiling the rest
+          self.addProcessAndTask(proc, jetCollection, ak4PFJets.clone(
+            src = pfCand, #pfCand for ak8pfabc is 'packedPFCandidates'
+            rParam = 0.8, #use ak4PFJets producer and update the R parameter
+            applyWeight = True,
+            srcWeights = cms.InputTag("abc")
+          )
+        )
         else:
           self.addProcessAndTask(proc, jetCollection, ak4PFJets.clone(
             src = pfCand,
@@ -370,6 +440,12 @@ class RecoJetAdder(object):
       #
       # Jet correction 
       #
+      
+      if jet == "ak4pfabc":
+        JETCorrLevels = []
+      if jet == "ak8pfabc":
+        JETCorrLevels = []
+      
       if recoJetInfo.jetPUMethod == "puppi":
         jetCorrLabel = "Puppi"
       elif recoJetInfo.jetPUMethod in [ "cs", "sk" ]:
@@ -411,6 +487,13 @@ class RecoJetAdder(object):
       #
       if recoJetInfo.jetPUMethod == "puppi":
         getattr(proc, "patJetFlavourAssociation{}{}".format(jetUpper,postfix)).weights = cms.InputTag(pfCand)
+      #
+      # Need to set this explicitly for ABC jets
+      #
+      if jet == "ak4pfabc":
+        getattr(proc, "patJetFlavourAssociation{}{}".format(jetUpper,postfix)).weights = cms.InputTag("abc")
+      if jet == "ak8pfabc":
+        getattr(proc, "patJetFlavourAssociation{}{}".format(jetUpper,postfix)).weights = cms.InputTag("abc")
 
       getJetMCFlavour = not recoJetInfo.doCalo and recoJetInfo.jetPUMethod != "cs"
       if not self.runOnMC: #Remove modules for Gen-level object matching

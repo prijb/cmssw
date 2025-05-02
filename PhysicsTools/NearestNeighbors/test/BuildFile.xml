@@ -1,0 +1,5 @@
+<bin name="testNanoFlann" file="testRunner.cpp, testNanoFlann.cc">
+  <use name="boost_filesystem"/>
+  <use name="cppunit"/>
+  <use name="PhysicsTools/NearestNeighbors"/>
+</bin>

@@ -93,8 +93,25 @@ config_recojets = [
     "inputCollection" : "",
     "genJetsCollection": "AK4GenJetsNoNu",
     "bTagDiscriminators": bTagDiscriminatorsForAK4,
-    "minPtFastjet" : 0.,
-  }, 
+    #"minPtFastjet" : 0.,
+    "minPtFastjet" : 8., #for ABCNet studies
+  },
+  { 
+    "jet" : "ak4pfabc",
+    "enabled" : True,
+    "inputCollection" : "",
+    "genJetsCollection": "AK4GenJetsNoNu",
+    #"minPtFastjet" : 0.,
+    "minPtFastjet" : 8., #for ABCNet studies
+  },
+  { 
+    "jet" : "ak8pfabc",
+    "enabled" : True,
+    "inputCollection" : "",
+    "genJetsCollection": "AK8GenJetsNoNu",
+    #"minPtFastjet" : 0.,
+    "minPtFastjet" : 150., #for ABCNet studies
+  },
   { 
     "jet" : "ak8pf",
     "enabled" : False,
@@ -124,6 +141,16 @@ nanoInfo_recojets = {
     "doQGL" : True,
     "doPUIDVar": True,
     "doBTag": True,
+  },
+  "ak4pfabc" : {
+    "name"  : "JetABC",
+    "doc"   : "AK4 PF ABC",
+    "ptcut" : "",
+  },
+  "ak8pfabc" : {
+    "name"  : "FatJetABC",
+    "doc"   : "AK8 PF ABC",
+    "ptcut" : "",
   },
   "ak8pf" : {
     "name"  : "FatJetPF",
@@ -463,7 +490,8 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
       payload = payload,
     )
   )
-
+  if "ABC" in jetName:
+    getattr(proc, "jetCorrFactorsNano{}".format(jetName)).levels = ()
   #
   # Update jets
   #
@@ -609,7 +637,8 @@ def ReclusterAK4CHSJets(proc, recoJA, runOnMC):
     "inputCollection" : "",
     "genJetsCollection": "AK4GenJetsNoNu",
     "bTagDiscriminators": bTagDiscriminatorsForAK4,
-    "minPtFastjet" : 0.,
+    #"minPtFastjet" : 0.,
+    "minPtFastjet" : 8., #for ABCNet studies
   }
   recoJetInfo = recoJA.addRecoJetCollection(proc, **cfg)
 
@@ -628,9 +657,11 @@ def ReclusterAK4CHSJets(proc, recoJA, runOnMC):
   #
   finalJetsCut = ""
   if runOnMC:
-    finalJetsCut = "(pt >= 8) || ((pt < 8) && (genJetFwdRef().backRef().isNonnull()))"
+    #finalJetsCut = "(pt >= 8) || ((pt < 8) && (genJetFwdRef().backRef().isNonnull()))"
+    finalJetsCut = "(pt > 8)" #for ABCNet studies
   else:
-    finalJetsCut = "(pt >= 8)"
+    #finalJetsCut = "(pt >= 8)"
+    finalJetsCut = "(pt >= 8)" #for ABCNet studies
 
   proc.finalJets.cut = finalJetsCut
   #
@@ -936,7 +967,8 @@ def ReclusterAK4GenJets(proc, genJA):
   # to be stored in the GenJet Table
   #
   proc.genJetTable.src = selectedGenJets
-  proc.genJetTable.cut = "" # No cut specified here. Save all gen jets after clustering
+  #proc.genJetTable.cut = "" # No cut specified here. Save all gen jets after clustering
+  proc.genJetTable.cut = "(pt >= 0)" #for ABCNet studies 
   proc.genJetTable.doc = "AK4 Gen jets (made with visible genparticles) with pt > 3 GeV" # default pt cut after clustering is 3 GeV
 
   genJetFlavourAssociationThisJet = "genJet{}FlavourAssociation".format(genJetName)
@@ -1008,7 +1040,6 @@ def RemoveAllJetPtCuts(proc):
 #
 #===========================================================================
 def PrepJMECustomNanoAOD(process,runOnMC):
-
   ############################################################################
   # Remove all default jet pt cuts from jets_cff.py
   ############################################################################
