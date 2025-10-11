@@ -26,6 +26,9 @@
 <use name="PhysicsTools/PatAlgos"/>
 <use name="RecoVertex/VertexPrimitives"/>
 <use name="RecoVertex/VertexTools"/>
+<use name="SimDataFormats/GeneratorProducts"/>
+<use name="SimDataFormats/PileupSummaryInfo"/>
+<use name="PhysicsTools/NanoAOD"/>
 <library file="*.cc" name="PhysicsToolsNanoAODPlugins">
   <use name="DataFormats/VertexReco"/>
   <use name="CommonTools/Utils"/>

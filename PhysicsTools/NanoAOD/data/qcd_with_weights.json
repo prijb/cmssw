@@ -1,0 +1,152 @@
+{
+    "v2": {
+        "dy": [],
+        "qcd": [
+            {
+                "min_pt": 0,
+                "max_pt": 9999,
+                "xsec": 78770000000.0,
+                "nr_inclusive": 0,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0,
+                "mu_em_filt_eff": 0.0,
+                "em_filt_eff": 0.0,
+                "em_mu_filt_eff": 0.0
+            },
+            {
+                "min_pt": 15.0,
+                "max_pt": 20.0,
+                "xsec": 885700000.0,
+                "nr_inclusive": 99939493,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0082,
+                "mu_em_filt_eff": 0.0491,
+                "em_filt_eff": 0.0593,
+                "em_mu_filt_eff": 0.0059
+            },
+            {
+                "min_pt": 20.0,
+                "max_pt": 30.0,
+                "xsec": 415700000.0,
+                "nr_inclusive": 99982528,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0082,
+                "mu_em_filt_eff": 0.0491,
+                "em_filt_eff": 0.0593,
+                "em_mu_filt_eff": 0.0059
+            },
+            {
+                "min_pt": 30.0,
+                "max_pt": 50.0,
+                "xsec": 112300000.0,
+                "nr_inclusive": 99979672,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0082,
+                "mu_em_filt_eff": 0.0491,
+                "em_filt_eff": 0.0593,
+                "em_mu_filt_eff": 0.0059
+            },
+            {
+                "min_pt": 50.0,
+                "max_pt": 80.0,
+                "xsec": 16730000.0,
+                "nr_inclusive": 97818588,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0146,
+                "mu_em_filt_eff": 0.1096,
+                "em_filt_eff": 0.1259,
+                "em_mu_filt_eff": 0.0108
+            },
+            {
+                "min_pt": 80.0,
+                "max_pt": 120.0,
+                "xsec": 2506000.0,
+                "nr_inclusive": 99242622,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0219,
+                "mu_em_filt_eff": 0.1367,
+                "em_filt_eff": 0.1563,
+                "em_mu_filt_eff": 0.0177
+            },
+            {
+                "min_pt": 120.0,
+                "max_pt": 170.0,
+                "xsec": 439800.0,
+                "nr_inclusive": 99956202,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0292,
+                "mu_em_filt_eff": 0.1417,
+                "em_filt_eff": 0.1635,
+                "em_mu_filt_eff": 0.0245
+            },
+            {
+                "min_pt": 170.0,
+                "max_pt": 300.0,
+                "xsec": 113300.0,
+                "nr_inclusive": 99977897,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0358,
+                "mu_em_filt_eff": 0.1426,
+                "em_filt_eff": 0.1595,
+                "em_mu_filt_eff": 0.0316
+            },
+            {
+                "min_pt": 300.0,
+                "max_pt": 470.0,
+                "xsec": 7581.0,
+                "nr_inclusive": 79831266,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0,
+                "mu_em_filt_eff": 0.0,
+                "em_filt_eff": 0.0,
+                "em_mu_filt_eff": 0.0
+            },
+            {
+                "min_pt": 470.0,
+                "max_pt": 600.0,
+                "xsec": 623.3,
+                "nr_inclusive": 77571658,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0,
+                "mu_em_filt_eff": 0.0,
+                "em_filt_eff": 0.0,
+                "em_mu_filt_eff": 0.0
+            },
+            {
+                "min_pt": 600.0,
+                "max_pt": 800.0,
+                "xsec": 178.7,
+                "nr_inclusive": 79741832,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0,
+                "mu_em_filt_eff": 0.0,
+                "em_filt_eff": 0.0,
+                "em_mu_filt_eff": 0.0
+            },
+            {
+                "min_pt": 800.0,
+                "max_pt": 1000.0,
+                "xsec": 30.54,
+                "nr_inclusive": 79504960,
+                "nr_em": 0,
+                "nr_mu": 0,
+                "mu_filt_eff": 0.0,
+                "mu_em_filt_eff": 0.0,
+                "em_filt_eff": 0.0,
+                "em_mu_filt_eff": 0.0
+            }
+        ],
+        "wjets": []
+    }
+}
